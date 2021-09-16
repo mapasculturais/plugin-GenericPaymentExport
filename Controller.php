@@ -204,30 +204,31 @@ class Controller extends \MapasCulturais\Controllers\Registration
         $treatment = $this->config['treatment'];
         $lot = $this->data["lot"] ?? null;
         $ignorePreviousLot = $this->data["ignorePreviousLot"] ?? null;
-
-
+        
         if(!$lot){
             echo i::__("Informe a identificação do lote.");
             exit;
-        }        
-      
-        if(!$ref = json_decode($opportunity->{$this->plugin->prefix('reference_export_exist')}, true)){
-            $ref = [trim($lot)];               
-        }else{             
-           
-            if(!in_array($lot, $ref)){
-                array_push($ref, trim($lot));
-            }else{
-                echo i::__("Nome do lote {$lot} já utilizado em exportação enterior, tente outro nome.");
-                exit;
-            }
-                         
-        }
+        }     
 
-        $app->disableAccessControl();
-        $opportunity->{$this->plugin->prefix('reference_export_exist')} = json_encode($ref);
-        $opportunity->save(true);
-        $app->enableAccessControl();
+        if($lot != "check"){
+            
+            if(!$ref = json_decode($opportunity->{$this->plugin->prefix('reference_export_exist')}, true)){
+                $ref = [trim($lot)];               
+            }else{             
+            
+                if(!in_array($lot, $ref)){
+                    array_push($ref, trim($lot));
+                }else{
+                    echo i::__("Nome do lote {$lot} já utilizado em exportação enterior, tente outro nome.");
+                    exit;
+                }                            
+            }
+             
+            $app->disableAccessControl();
+            $opportunity->{$this->plugin->prefix('reference_export_exist')} = json_encode($ref);
+            $opportunity->save(true);
+            $app->enableAccessControl();
+        }
          
         $csv_data = [];
         
@@ -244,14 +245,15 @@ class Controller extends \MapasCulturais\Controllers\Registration
                     continue;
                 }
 
-                if(!in_array($lot, $ref)){
-                    array_push($ref, trim($lot));
-                }else{
-                    echo i::__("Nome do lote {$lot} já utilizado em exportação enterior, tente ooutro nome.");
-                    exit;
+                if($lot != "check"){
+                    if(!in_array($lot, $ref)){
+                        array_push($ref, trim($lot));
+                    }else{
+                        echo i::__("Nome do lote {$lot} já utilizado em exportação enterior, tente ooutro nome.");
+                        exit;
+                    }
                 }
-
-                 
+                
             }
             
             $this->registerRegistrationMetadata($opportunity);
@@ -284,12 +286,15 @@ class Controller extends \MapasCulturais\Controllers\Registration
             $app = App::i();
             $app->log->debug("#".($i+1). " - Exportando inscrição ---> ". $registration->id);
 
-            $app->disableAccessControl();
-            $registration->{$this->plugin->prefix('reference_export')} = json_encode($ref);
-            $registration->save(true);
-            $app->enableAccessControl();
+            if($lot != "check"){
+                $app->disableAccessControl();
+                $registration->{$this->plugin->prefix('reference_export')} = json_encode($ref);
+                $registration->save(true);
+                $app->enableAccessControl();
+
+                $app->em->clear();
+            }
             
-            $app->em->clear();
             
         }
 
