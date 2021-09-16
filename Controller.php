@@ -29,14 +29,16 @@ class Controller extends \MapasCulturais\Controllers\Registration
      * @param string $controller_id 
      * @return GenericValidator 
      */
-    static public function i(string $controller_id): \MapasCulturais\Controller {
+    static public function i(string $controller_id): \MapasCulturais\Controller
+    {
         $instance = parent::i($controller_id);
         $instance->init($controller_id);
 
         return $instance;
     }
 
-    protected function init($controller_id) {
+    protected function init($controller_id)
+    {
         if (!$this->_initiated) {
             $this->plugin = GenericPaymentExport::getInstanceBySlug($controller_id);
             $this->config = $this->plugin->config;
@@ -73,29 +75,29 @@ class Controller extends \MapasCulturais\Controllers\Registration
 
     public function filterRegistrations($values)
     {
-        if(!$values){
+        if (!$values) {
             return;
         }
 
-        if(strpos(",", $values) > 0){
+        if (strpos(",", $values) > 0) {
             $registration = explode(",", $values);
-        }else{
+        } else {
             $registration = explode("\n", $values);
         }
-        
-        $result = array_map(function($index){
+
+        $result = array_map(function ($index) {
             return  preg_replace('/[^0-9]/i', '', $this->normalizeString($index));
         }, $registration);
 
-        if(count($registration) > 1){
+        if (count($registration) > 1) {
             return array_filter($result);
         }
-        
+
         echo "Filtro por inscrições falhou";
         exit;
     }
 
-     /**
+    /**
      * Retrieve the registrations.
      * @param Opportunity $opportunity
      * @return Registration[]
@@ -116,7 +118,6 @@ class Controller extends \MapasCulturais\Controllers\Registration
         $to = $this->data["to"] ?? "";
         $filterRegistrations = $this->filterRegistrations($this->data["filterRegistrations"]) ?? null;
 
-        
         if ($from && !DateTime::createFromFormat("Y-m-d", $from)) {
             throw new \Exception(i::__("O formato do parâmetro `from` é inválido."));
         }
@@ -125,7 +126,7 @@ class Controller extends \MapasCulturais\Controllers\Registration
         }
         $dql_from = "";
 
-      
+
         if ($from) { // start date
             $dql_params["from"] = (new DateTime($from))->format("Y-m-d 00:00");
             $dql_from = "r.sentTimestamp >= :from AND";
@@ -141,7 +142,6 @@ class Controller extends \MapasCulturais\Controllers\Registration
             $dql_to = "r.id IN (:filterRegistration) AND";
         }
 
-       
         $dql = "
             SELECT
                 r.id
@@ -162,16 +162,14 @@ class Controller extends \MapasCulturais\Controllers\Registration
         foreach ($result as $registration) {
 
             $registrations[] = $registration['id'];
-
         }
 
-       
         return $registrations;
     }
 
-   /**
-    * Expora planilha para pagamento
-    */
+    /**
+     * Expora planilha para pagamento
+     */
     public function ALL_export()
     {
         $app = App::i();
@@ -180,14 +178,12 @@ class Controller extends \MapasCulturais\Controllers\Registration
         $opportunity_id = $this->data['opportunity'];
         $opportunity = $app->repo('Opportunity')->find($opportunity_id);
 
-
         $this->exportInit($opportunity);
 
-        $registrations_ids = $this->getRegistrations($opportunity, true); 
-        
+        $registrations_ids = $this->getRegistrations($opportunity, true);
+
         $filename = $this->generateCSV($registrations_ids, $opportunity);
-        
-      
+
         header('Content-Type: application/csv');
         header('Content-Disposition: attachment; filename=' . basename($filename));
         header('Pragma: no-cache');
@@ -198,64 +194,63 @@ class Controller extends \MapasCulturais\Controllers\Registration
     {
         $app = App::i();
 
-        $prefix = $this->plugin->getSlug()."_".$this->config['file_name_prefix'];
+        $prefix = $this->plugin->getSlug() . "_" . $this->config['file_name_prefix'];
         $headers = array_keys($this->config['fields']) ?? [];
         $fields =  $this->config['fields'];
         $treatment = $this->config['treatment'];
         $lot = $this->data["lot"] ?? null;
         $ignorePreviousLot = $this->data["ignorePreviousLot"] ?? null;
-        
-        if(!$lot){
+
+        if (!$lot) {
             echo i::__("Informe a identificação do lote.");
             exit;
-        }     
+        }
 
-        if($lot != "check"){
-            
-            if(!$ref = json_decode($opportunity->{$this->plugin->prefix('reference_export_exist')}, true)){
-                $ref = [trim($lot)];               
-            }else{             
-            
-                if(!in_array($lot, $ref)){
+        if ($lot != "check") {
+
+            if (!$ref = json_decode($opportunity->{$this->plugin->prefix('reference_export_exist')}, true)) {
+                $ref = [trim($lot)];
+            } else {
+
+                if (!in_array($lot, $ref)) {
                     array_push($ref, trim($lot));
-                }else{
+                } else {
                     echo i::__("Nome do lote {$lot} já utilizado em exportação enterior, tente outro nome.");
                     exit;
-                }                            
+                }
             }
-             
+
             $app->disableAccessControl();
             $opportunity->{$this->plugin->prefix('reference_export_exist')} = json_encode($ref);
             $opportunity->save(true);
             $app->enableAccessControl();
         }
-         
+
         $csv_data = [];
-        
+
         foreach ($registrations_ids as $i => $id) {
 
-            $registration = $app->repo("Registration")->find($id);           
-           
-            if(!$ref = json_decode($registration->{$this->plugin->prefix('reference_export')}, true)){
-                $ref = [trim($lot)];               
-            }else{
-                 
-                if($ignorePreviousLot){
-                    $app->log->debug("#".($i+1). " - Inscrição já exportada em lote anterior ---> ". $registration->id);
+            $registration = $app->repo("Registration")->find($id);
+
+            if (!$ref = json_decode($registration->{$this->plugin->prefix('reference_export')}, true)) {
+                $ref = [trim($lot)];
+            } else {
+
+                if ($ignorePreviousLot) {
+                    $app->log->debug("#" . ($i + 1) . " - Inscrição já exportada em lote anterior ---> " . $registration->id);
                     continue;
                 }
 
-                if($lot != "check"){
-                    if(!in_array($lot, $ref)){
+                if ($lot != "check") {
+                    if (!in_array($lot, $ref)) {
                         array_push($ref, trim($lot));
-                    }else{
+                    } else {
                         echo i::__("Nome do lote {$lot} já utilizado em exportação enterior, tente ooutro nome.");
                         exit;
                     }
                 }
-                
             }
-            
+
             $this->registerRegistrationMetadata($opportunity);
 
             foreach ($fields as $key => $field) {
@@ -266,27 +261,27 @@ class Controller extends \MapasCulturais\Controllers\Registration
                 } else if (is_int($field)) {
                     $field = "field_{$field}";
                     $value = $registration->$field;
-                }else if (is_array($field)) {
-                   foreach($field as $k =>  $value){
-                       if(is_int($value)){
-                           $field[$k]  = "field_{$value}";
-                       }else{
-                        $field[$k] = $value;
-                       }
-                   }
-                } else if (empty($field) || $field =="") {                    
+                } else if (is_array($field)) {
+                    foreach ($field as $k =>  $value) {
+                        if (is_int($value)) {
+                            $field[$k]  = "field_{$value}";
+                        } else {
+                            $field[$k] = $value;
+                        }
+                    }
+                } else if (empty($field) || $field == "") {
                     $value = "";
                 } else {
                     $value = $field;
-                }               
-            
+                }
+
                 $csv_data[$i][$key] = $treatment($registration, $key, $field) ?? $value;
             }
 
             $app = App::i();
-            $app->log->debug("#".($i+1). " - Exportando inscrição ---> ". $registration->id);
+            $app->log->debug("#" . ($i + 1) . " - Exportando inscrição ---> " . $registration->id);
 
-            if($lot != "check"){
+            if ($lot != "check") {
                 $app->disableAccessControl();
                 $registration->{$this->plugin->prefix('reference_export')} = json_encode($ref);
                 $registration->save(true);
@@ -294,12 +289,10 @@ class Controller extends \MapasCulturais\Controllers\Registration
 
                 $app->em->clear();
             }
-            
-            
         }
 
-        
-        
+
+
         $slug = $this->plugin->slug;
         $hash = md5(json_encode($csv_data));
         $dir = PRIVATE_FILES_PATH . $slug . '/';
@@ -321,7 +314,7 @@ class Controller extends \MapasCulturais\Controllers\Registration
         return $filename;
     }
 
-      /**
+    /**
      * Normaliza uma string
      *
      * @param string $valor
@@ -332,5 +325,4 @@ class Controller extends \MapasCulturais\Controllers\Registration
         $valor = Normalizer::normalize($valor, Normalizer::FORM_D);
         return preg_replace('/[^A-Za-z0-9 ]/i', '', $valor);
     }
-
 }
