@@ -16,7 +16,9 @@ $route = MapasCulturais\App::i()->createUrl($slug, 'export', ['opportunity' => $
         <label for="from"><?= i::__("Data inicial") ?></label>
         <input type="date" name="from" id="from">
         <label for="to"><?= i::__("Data final") ?></label>
-        <input type="date" name="to" id="to">
+        <input type="date" name="to" id="to"> <br><br>
+        <label for="to"><?= i::__("Exportar somente") ?></label>
+        <textarea name="filterRegistrations" id="filterRegistrations" cols="30" rows="5"></textarea>
         # <?= i::__("Caso não queira filtrar entre datas, deixe os campos vazios.") ?>
         <button class="btn btn-primary download" type="submit"><?= i::__("Exportar") ?></button>
     </form>

@@ -71,6 +71,30 @@ class Controller extends \MapasCulturais\Controllers\Registration
         ini_set('memory_limit', '768M');
     }
 
+    public function filterRegistrations($values)
+    {
+        if(!$values){
+            return;
+        }
+
+        if(strpos(",", $values) > 0){
+            $registration = explode(",", $values);
+        }else{
+            $registration = explode("\n", $values);
+        }
+        
+        $result = array_map(function($index){
+            return  preg_replace('/[^0-9]/i', '', $this->normalizeString($index));
+        }, $registration);
+
+        if(count($registration) > 1){
+            return array_filter($result);
+        }
+        
+        echo "Filtro por inscrições falhou";
+        exit;
+    }
+
      /**
      * Retrieve the registrations.
      * @param Opportunity $opportunity
@@ -90,6 +114,8 @@ class Controller extends \MapasCulturais\Controllers\Registration
         ];
         $from = $this->data["from"] ?? "";
         $to = $this->data["to"] ?? "";
+        $filterRegistrations = $this->filterRegistrations($this->data["filterRegistrations"]) ?? null;
+
         
         if ($from && !DateTime::createFromFormat("Y-m-d", $from)) {
             throw new \Exception(i::__("O formato do parâmetro `from` é inválido."));
@@ -102,23 +128,29 @@ class Controller extends \MapasCulturais\Controllers\Registration
       
         if ($from) { // start date
             $dql_params["from"] = (new DateTime($from))->format("Y-m-d 00:00");
-            $dql_from = "e.sentTimestamp >= :from AND";
+            $dql_from = "r.sentTimestamp >= :from AND";
         }
         $dql_to = "";
         if ($to) { // end date
             $dql_params["to"] = (new DateTime($to))->format("Y-m-d 00:00");
-            $dql_to = "e.sentTimestamp <= :to AND";
+            $dql_to = "r.sentTimestamp <= :to AND";
+        }
+
+        if ($filterRegistration) { // end date
+            $dql_params["filterRegistration"] = $filterRegistration;
+            $dql_to = "r.id IN (:filterRegistration) AND";
         }
         $dql = "
             SELECT
-                e
+                r
             FROM
-                MapasCulturais\Entities\Registration e
+                MapasCulturais\\Entities\\Registration r
             WHERE
                 $dql_to
                 $dql_from
-                e.status = :status AND
-                e.opportunity = :opportunity_id";
+                r.status = :status AND
+                r.opportunity = :opportunity_id";
+
         $query = $app->em->createQuery($dql);
         $query->setParameters($dql_params);
         $result = $query->getResult();
