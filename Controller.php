@@ -136,8 +136,8 @@ class Controller extends \MapasCulturais\Controllers\Registration
             $dql_to = "r.sentTimestamp <= :to AND";
         }
 
-        if ($filterRegistration) { // end date
-            $dql_params["filterRegistration"] = $filterRegistration;
+        if ($filterRegistrations) { // end date
+            $dql_params["filterRegistration"] = $filterRegistrations;
             $dql_to = "r.id IN (:filterRegistration) AND";
         }
         $dql = "
