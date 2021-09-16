@@ -53,7 +53,7 @@ class Plugin extends \MapasCulturais\Plugin
                         $document = preg_replace('/[^0-9]/i', '', $registration);
                         return (strlen($document) <= 11) ? $document : $document . "Este CPF é Inválido";
                     },
-                    'NOME_SOCIAL' => function () use ($registration, $field) {
+                    'NOME_COMPLETO' => function () use ($registration, $field) {
                         return $this->normalizeString($registration->$field);
                     },
                     'LOGRADOURO' => function () use ($registration, $field) {
