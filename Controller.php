@@ -238,7 +238,7 @@ class Controller extends \MapasCulturais\Controllers\Registration
             }else{
                  
                 if($ignorePreviousLot){
-                    $app->log->debug("#".($i+1)." de ".count($registrations_ids). " - Inscrição ja exportada em lote anterior ---> ". $registration->id);
+                    $app->log->debug("#".($i+1). " - Inscrição já exportada em lote anterior ---> ". $registration->id);
                     continue;
                 }
 
@@ -280,7 +280,7 @@ class Controller extends \MapasCulturais\Controllers\Registration
             }
 
             $app = App::i();
-            $app->log->debug("#".($i+1)." de ".count($registrations_ids). " -Exportando inscrição ---> ". $registration->id);
+            $app->log->debug("#".($i+1). " - Exportando inscrição ---> ". $registration->id);
 
             $registration->{$this->plugin->prefix('reference_export')} = json_encode($ref);
             $registration->save(true);
