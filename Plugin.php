@@ -179,6 +179,26 @@ class Plugin extends \MapasCulturais\Plugin
         $app = App::i();
 
         $app->registerController($this->getSlug(), 'GenericPaymentExport\Controller');
+
+        $this->registerRegistrationMetadata($this->prefix("already_exported"), [
+            'label' => 'Indica que já foi exportado',
+            'type' => 'boolean',
+            'private' => false,
+        ]);
+
+        $this->registerMetadata('MapasCulturais\Entities\Registration', $this->prefix("reference_export"), [
+            'label' => i::__('Refertência do lote exportado para pagamento'),
+            'type' => 'json',
+            'private' => true,
+            'default' => ''
+        ]);
+
+        $this->registerMetadata('MapasCulturais\Entities\Opportunity', $this->prefix("reference_export_exist"), [
+            'label' => i::__('Refertência dos lotes já exportados para pagamento'),
+            'type' => 'json',
+            'private' => true,
+            'default' => ''
+        ]);
     }
 
     public static function getInstanceBySlug(string $slug)

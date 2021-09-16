@@ -15,8 +15,21 @@ $route = MapasCulturais\App::i()->createUrl($slug, 'export', ['opportunity' => $
     <form class="form-export-<?= $slug ?>" action="<?= $route ?>" method="POST">
         <label for="from"><?= i::__("Data inicial") ?></label>
         <input type="date" name="from" id="from">
+        
         <label for="to"><?= i::__("Data final") ?></label>
-        <input type="date" name="to" id="to"> <br><br>
+        <input type="date" name="to" id="to"> <br>
+
+        <label for="to"><?= i::__("Identificação do lote") ?></label>
+        <input type="text" name="lot" id="to" placeholder="Identificação do lote de pagamento Ex.: Lote 01"> <br>
+
+        <div>
+            <input type="checkbox" name="ignorePreviousLot">
+            <label for="to"><?= i::__("Ignorar inscrições de lotes anteriores") ?></label>
+        </div>
+        
+        <br><br>
+        
+        
         <label for="to"><?= i::__("Exportar somente") ?></label>
         <textarea name="filterRegistrations" id="filterRegistrations" cols="30" rows="5" placeholder="Insira aqui o número ou ID da inscrição, separados por virgula ou uma inscrição por linha"></textarea>
         # <?= i::__("Caso não queira filtrar entre datas, deixe os campos vazios.") ?>

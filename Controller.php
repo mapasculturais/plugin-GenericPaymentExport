@@ -100,7 +100,7 @@ class Controller extends \MapasCulturais\Controllers\Registration
      * @param Opportunity $opportunity
      * @return Registration[]
      */
-    protected function getRegistrations(Opportunity $opportunity)
+    protected function getRegistrations(Opportunity $opportunity, $returnIds = false)
     {
         $app = App::i();
 
@@ -140,9 +140,11 @@ class Controller extends \MapasCulturais\Controllers\Registration
             $dql_params["filterRegistration"] = $filterRegistrations;
             $dql_to = "r.id IN (:filterRegistration) AND";
         }
+
+       
         $dql = "
             SELECT
-                r
+                r.id
             FROM
                 MapasCulturais\\Entities\\Registration r
             WHERE
@@ -159,10 +161,11 @@ class Controller extends \MapasCulturais\Controllers\Registration
 
         foreach ($result as $registration) {
 
-            $registrations[] = $registration;
+            $registrations[] = $registration['id'];
 
         }
 
+       
         return $registrations;
     }
 
@@ -180,9 +183,9 @@ class Controller extends \MapasCulturais\Controllers\Registration
 
         $this->exportInit($opportunity);
 
-        $registrations = $this->getRegistrations($opportunity); 
+        $registrations_ids = $this->getRegistrations($opportunity, true); 
         
-        $filename = $this->generateCSV($registrations, $opportunity);
+        $filename = $this->generateCSV($registrations_ids, $opportunity);
         
       
         header('Content-Type: application/csv');
@@ -191,17 +194,63 @@ class Controller extends \MapasCulturais\Controllers\Registration
         readfile($filename);
     }
 
-    protected function generateCSV(array $registrations, $opportunity)
+    protected function generateCSV(array $registrations_ids, $opportunity)
     {
+        $app = App::i();
+
         $prefix = $this->plugin->getSlug()."_".$this->config['file_name_prefix'];
         $headers = array_keys($this->config['fields']) ?? [];
         $fields =  $this->config['fields'];
         $treatment = $this->config['treatment'];
+        $lot = $this->data["lot"] ?? null;
+        $ignorePreviousLot = $this->data["ignorePreviousLot"] ?? null;
 
+
+        if(!$lot){
+            echo i::__("Informe a identificação do lote.");
+            exit;
+        }        
+      
+        if(!$ref = json_decode($opportunity->{$this->plugin->prefix('reference_export_exist')}, true)){
+            $ref = [trim($lot)];               
+        }else{             
+           
+            if(!in_array($lot, $ref)){
+                array_push($ref, trim($lot));
+            }else{
+                echo i::__("Nome do lote {$lot} já utilizado em exportação enterior, tente outro nome.");
+                exit;
+            }
+                         
+        }
+
+        $opportunity->{$this->plugin->prefix('reference_export_exist')} = json_encode($ref);
+        $opportunity->save(true);
          
         $csv_data = [];
         
-        foreach ($registrations as $i => $registration) {
+        foreach ($registrations_ids as $i => $id) {
+
+            $registration = $app->repo("Registration")->find($id);           
+           
+            if(!$ref = json_decode($registration->{$this->plugin->prefix('reference_export')}, true)){
+                $ref = [trim($lot)];               
+            }else{
+                 
+                if($ignorePreviousLot){
+                    $app->log->debug("#".($i+1)." de ".count($registrations_ids). " - Inscrição ja exportada em lote anterior ---> ". $registration->id);
+                    continue;
+                }
+
+                if(!in_array($lot, $ref)){
+                    array_push($ref, trim($lot));
+                }else{
+                    echo i::__("Nome do lote {$lot} já utilizado em exportação enterior, tente ooutro nome.");
+                    exit;
+                }
+
+                 
+            }
             
             $this->registerRegistrationMetadata($opportunity);
 
@@ -231,15 +280,22 @@ class Controller extends \MapasCulturais\Controllers\Registration
             }
 
             $app = App::i();
-            $app->log->debug("#".($i+1)." de ".count($registrations). " -Exportando inscrição ---> ". $registration->id);
+            $app->log->debug("#".($i+1)." de ".count($registrations_ids). " -Exportando inscrição ---> ". $registration->id);
+
+            $registration->{$this->plugin->prefix('reference_export')} = json_encode($ref);
+            $registration->save(true);
+            
+            $app->em->clear();
             
         }
+
+        
         
         $slug = $this->plugin->slug;
         $hash = md5(json_encode($csv_data));
         $dir = PRIVATE_FILES_PATH . $slug . '/';
 
-        $filename =  $dir . "{$slug}-{$prefix}{$opportunity->id}-{$hash}.csv";
+        $filename =  $dir . "{$lot}---{$slug}-{$prefix}{$opportunity->id}-{$hash}.csv";
 
         if (!is_dir($dir)) {
             mkdir($dir, 0700, true);
