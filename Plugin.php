@@ -180,12 +180,6 @@ class Plugin extends \MapasCulturais\Plugin
 
         $app->registerController($this->getSlug(), 'GenericPaymentExport\Controller');
 
-        $this->registerRegistrationMetadata($this->prefix("already_exported"), [
-            'label' => 'Indica que já foi exportado',
-            'type' => 'boolean',
-            'private' => false,
-        ]);
-
         $this->registerMetadata('MapasCulturais\Entities\Registration', $this->prefix("reference_export"), [
             'label' => i::__('Refertência do lote exportado para pagamento'),
             'type' => 'json',
