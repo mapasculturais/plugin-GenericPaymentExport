@@ -224,8 +224,10 @@ class Controller extends \MapasCulturais\Controllers\Registration
                          
         }
 
+        $app->disableAccessControl();
         $opportunity->{$this->plugin->prefix('reference_export_exist')} = json_encode($ref);
         $opportunity->save(true);
+        $app->enableAccessControl();
          
         $csv_data = [];
         
@@ -282,8 +284,10 @@ class Controller extends \MapasCulturais\Controllers\Registration
             $app = App::i();
             $app->log->debug("#".($i+1). " - Exportando inscrição ---> ". $registration->id);
 
+            $app->disableAccessControl();
             $registration->{$this->plugin->prefix('reference_export')} = json_encode($ref);
             $registration->save(true);
+            $app->enableAccessControl();
             
             $app->em->clear();
             
