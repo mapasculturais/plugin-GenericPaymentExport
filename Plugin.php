@@ -216,6 +216,11 @@ class Plugin extends \MapasCulturais\Plugin
         return $this->_config["name"];
     }
 
+    public function prefix($value)
+    {
+        return $this->getSlug()."_".$value;
+    }
+
     /**
      * Normaliza uma string
      *
