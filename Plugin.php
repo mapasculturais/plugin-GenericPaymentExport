@@ -25,6 +25,7 @@ class Plugin extends \MapasCulturais\Plugin
         $config += [
             'plugin_enabled' => true,
             'file_name_prefix' => "op",
+            'required_validations_for_export' => [],
             'treatment' => function ($registration, $key, $field) {
 
                 $result = [
