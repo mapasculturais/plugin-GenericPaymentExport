@@ -283,7 +283,6 @@ class Controller extends \MapasCulturais\Controllers\Registration
                 $csv_data[$i][$key] = $treatment($registration, $key, $field) ?? $value;
             }
 
-            $app = App::i();
             $app->log->debug("#" . ($i + 1) . " - Exportando inscrição ---> " . $registration->id);
 
             if ($lot != "check") {
