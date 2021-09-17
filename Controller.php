@@ -200,7 +200,7 @@ class Controller extends \MapasCulturais\Controllers\Registration
         $treatment = $this->config['treatment'];
         $lot = $this->data["lot"] ?? null;
         $ignorePreviousLot = $this->data["ignorePreviousLot"] ?? null;
-
+        
         if (!$lot) {
             echo i::__("Informe a identificação do lote.");
             exit;
@@ -228,9 +228,14 @@ class Controller extends \MapasCulturais\Controllers\Registration
 
         $csv_data = [];
 
-        foreach ($registrations_ids as $i => $id) {
-
+        foreach ($registrations_ids as $i => $id) {           
+            
             $registration = $app->repo("Registration")->find($id);
+            
+            if(!($evaluations = $app->repo("RegistrationEvaluation")->findBy(["registration" => $registration,"status" => 1]))){
+               continue;
+            }
+            
 
             if (!$ref = json_decode($registration->{$this->plugin->prefix('reference_export')}, true)) {
                 $ref = [trim($lot)];
