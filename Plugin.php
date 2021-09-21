@@ -50,8 +50,8 @@ class Plugin extends \MapasCulturais\Plugin
 
                         return mb_strtolower($result);
                     },
-                    'CPF' => function () use ($registration) {
-                        $document = preg_replace('/[^0-9]/i', '', $registration);
+                    'CPF' => function () use ($registration, $field) {
+                        $document = preg_replace('/[^0-9]/i', '', $registration->$field);
                         return (strlen($document) <= 11) ? $document : $document . "Este CPF é Inválido";
                     },
                     'NOME_COMPLETO' => function () use ($registration, $field) {
