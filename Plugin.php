@@ -161,13 +161,13 @@ class Plugin extends \MapasCulturais\Plugin
         $plugin = $this;
 
         // Insere botão para exportação da planilha
-        $app->hook("template(opportunity.single.header-inscritos):end", function () use ($plugin, $app) {
+        $app->hook("template(opportunity.<<single|edit>>.sidebar-right):end", function () use ($plugin, $app) {
             /** @var \MapasCulturais\Theme $this */
             $opportunity = $this->controller->requestedEntity;
             $is_opportunity_managed = $plugin->config["is_opportunity_managed_handler"]($opportunity);
             if ($is_opportunity_managed && $opportunity->canUser("@control")) {
-                $this->part("GenericPaymentExport/csv-button", [
-                    "opportunity" => $opportunity->id,
+                $this->part("GenericPaymentExport/validador-uploads", [
+                    "entity" => $opportunity,
                     "plugin" => $plugin
                 ]);
             }
