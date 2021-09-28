@@ -224,8 +224,12 @@ class Plugin extends \MapasCulturais\Plugin
      */
     private function normalizeString($valor): string
     {
-        $valor = trim(preg_replace('/[^A-Za-z0-9 ]/i', '', $valor));
+        $valor = trim(preg_replace('/[^A-Za-z0-9 ]/i', '', $this->removeSpecialChar($valor)));
         return Normalizer::normalize($valor, Normalizer::FORM_D);
+    }
+
+    function removeSpecialChar($string){
+        return preg_replace(array("/(á|à|ã|â|ä)/","/(Á|À|Ã|Â|Ä)/","/(é|è|ê|ë)/","/(É|È|Ê|Ë)/","/(í|ì|î|ï)/","/(Í|Ì|Î|Ï)/","/(ó|ò|õ|ô|ö)/","/(Ó|Ò|Õ|Ô|Ö)/","/(ú|ù|û|ü)/","/(Ú|Ù|Û|Ü)/","/(ñ)/","/(Ñ)/","/(ç)/","/(Ç)/"),explode(" ","a A e E i I o O u U n N c C"),$string);
     }
 
     public function getNumberBank(string $value)
