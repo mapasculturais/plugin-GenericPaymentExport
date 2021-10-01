@@ -247,7 +247,7 @@ class Controller extends \MapasCulturais\Controllers\Registration
                 }
 
                 if ($lot != "check") {
-                    if (!in_array($lot, $ref)) {
+                    if (!in_array(strtolower($lot), array_change_key_case($ref, CASE_LOWER))) {
                         array_push($ref, trim($lot));
                     } else {
                         echo i::__("Nome do lote {$lot} já utilizado em exportação enterior, tente ooutro nome.");
