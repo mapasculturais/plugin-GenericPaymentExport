@@ -55,35 +55,35 @@ class Plugin extends \MapasCulturais\Plugin
                         return (strlen($document) <= 11) ? $document : $document . "Este CPF é Inválido";
                     },
                     'NOME_COMPLETO' => function () use ($registration, $field) {
-                        return $this->normalizeString($registration->$field);
+                        return trim($registration->$field);
                     },
                     'LOGRADOURO' => function () use ($registration, $field) {
                         $address = $registration->$field;
-                        return $this->normalizeString($address['En_Nome_Logradouro']);
+                        return trim($address['En_Nome_Logradouro']);
                     },
                     'NUMERO' => function () use ($registration, $field) {
                         $address = $registration->$field;
-                        return $this->normalizeString($address['En_Num']);
+                        return trim($address['En_Num']);
                     },
                     'COMPLEMENTO' => function () use ($registration, $field) {
                         $address = $registration->$field;
-                        return $this->normalizeString($address['En_Complemento']);
+                        return trim($address['En_Complemento']);
                     },
                     'BAIRRO' => function () use ($registration, $field) {
                         $address = $registration->$field;
-                        return $this->normalizeString($address['En_Bairro']);
+                        return trim($address['En_Bairro']);
                     },
                     'MUNICIPIO' => function () use ($registration, $field) {
                         $address = $registration->$field;
-                        return $this->normalizeString($address['En_Municipio']);
+                        return trim($address['En_Municipio']);
                     },
                     'CEP' => function () use ($registration, $field) {
                         $address = $registration->$field;
-                        return $this->normalizeString($address['En_CEP']);
+                        return trim($address['En_CEP']);
                     },
                     'ESTADO' => function () use ($registration, $field) {
                         $address = $registration->$field;
-                        return $this->normalizeString($address['En_Estado']);
+                        return trim($address['En_Estado']);
                     },
                     'TELEFONE' => function () use ($registration, $field) {
                         foreach ($field as $value) {
@@ -92,17 +92,17 @@ class Plugin extends \MapasCulturais\Plugin
                             }
                         }
 
-                        return preg_replace('/[^0-9]/i', '', $this->normalizeString($result));
+                        return preg_replace('/[^0-9]/i', '', trim($result));
                     },
                     'TIPO_CONTA' => function () use ($registration, $field) {
                         $type = $registration->$field;
-                        return is_array($registration->$field) ? $this->normalizeString($type[0]) : $this->normalizeString($type);
+                        return is_array($registration->$field) ? trim($type[0]) : trim($type);
                     },
                     'NUM_BANCO' => function () use ($registration, $field) {
                         return $this->getNumberBank($registration->$field) ?? preg_replace('/[^0-9]/i', '', $registration->$field);
                     },
                     'NOME_BANCO' => function () use ($registration, $field) {
-                        return trim(preg_replace('/[^A-Za-z ]/i', '', $registration->$field));
+                        return trim(preg_replace('/\d+/u', '', trim($registration->$field)));
                     },
                     'AGENCIA_BANCO' => function () use ($registration, $field) {
                         $branch = $registration->$field;
@@ -120,7 +120,7 @@ class Plugin extends \MapasCulturais\Plugin
                     'CONTA_BANCO' => function () use ($registration, $field) {
                         $account = $registration->$field;
                         if (strlen($account) >= 9) {
-                            return (strlen($account) == 9) ? $account : $account . " - Agência inválida";
+                            return (strlen($account) == 9) ? $account : $account . " - Conta inválida";
                         } else {
                             return str_pad($account, 9, 0, STR_PAD_LEFT);
                         }
@@ -135,7 +135,7 @@ class Plugin extends \MapasCulturais\Plugin
                         return " ";
                     },
                     'INSCRICAO_ID' => function () use ($registration, $field) {
-                        return $this->normalizeString($registration->id);
+                        return trim($registration->id);
                     }
 
 
@@ -370,7 +370,7 @@ class Plugin extends \MapasCulturais\Plugin
         foreach ($banks as $key => $bank) {
             $result = preg_replace('/[^A-Za-z]/i', "", $this->normalizeString(mb_strtolower($bank)));
             if ((string)$result === (string)$value) {
-                return preg_replace('/[^0-9]/i', '', $key);
+                return trim($key);
             }
         }
         return null;
