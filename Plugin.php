@@ -29,15 +29,15 @@ class Plugin extends \MapasCulturais\Plugin
             'treatment' => function ($registration, $key, $field) {
 
                 $result = [
-                    'TIPO_IDENTIFICACAO' => function () use ($registration, $field) {
+                    'T. Identificação' => function () use ($registration, $field) {
                         $document = preg_replace('/[^0-9]/i', '', $registration->$field);
                         return (strlen($document) <= 11) ? 1 : 2;
                     },
-                    'TIPO_CREDOR' => function () use ($registration, $field) {
+                    'T. Credor' => function () use ($registration, $field) {
                         $document = preg_replace('/[^0-9]/i', '', $registration->$field);
                         return (strlen($document) <= 11) ? 1 : 2;
                     },
-                    'EMAIL' => function () use ($registration, $field) {
+                    'Email' => function () use ($registration, $field) {
                         if (is_array($field)) {
                             foreach ($field as $value) {
                                 if ($result = $registration->$value) {
@@ -54,26 +54,26 @@ class Plugin extends \MapasCulturais\Plugin
                         $document = preg_replace('/[^0-9]/i', '', $registration->$field);
                         return (strlen($document) <= 11) ? $document : $document . "Este CPF é Inválido";
                     },
-                    'NOME_COMPLETO' => function () use ($registration, $field) {
+                    'Nome Social' => function () use ($registration, $field) {
                         return trim($registration->$field);
                     },
-                    'LOGRADOURO' => function () use ($registration, $field) {
+                    'Logradouro' => function () use ($registration, $field) {
                         $address = $registration->$field;
                         return trim($address['En_Nome_Logradouro']);
                     },
-                    'NUMERO' => function () use ($registration, $field) {
+                    'Nº' => function () use ($registration, $field) {
                         $address = $registration->$field;
                         return trim($address['En_Num']);
                     },
-                    'COMPLEMENTO' => function () use ($registration, $field) {
+                    'Complemento' => function () use ($registration, $field) {
                         $address = $registration->$field;
                         return trim($address['En_Complemento']);
                     },
-                    'BAIRRO' => function () use ($registration, $field) {
+                    'Bairro' => function () use ($registration, $field) {
                         $address = $registration->$field;
                         return trim($address['En_Bairro']);
                     },
-                    'MUNICIPIO' => function () use ($registration, $field) {
+                    'Municipio' => function () use ($registration, $field) {
                         $address = $registration->$field;
                         return trim($address['En_Municipio']);
                     },
@@ -81,11 +81,11 @@ class Plugin extends \MapasCulturais\Plugin
                         $address = $registration->$field;
                         return trim($address['En_CEP']);
                     },
-                    'ESTADO' => function () use ($registration, $field) {
+                    'UF' => function () use ($registration, $field) {
                         $address = $registration->$field;
                         return trim($address['En_Estado']);
                     },
-                    'TELEFONE' => function () use ($registration, $field) {
+                    'TEL' => function () use ($registration, $field) {
                         foreach ($field as $value) {
                             if ($result = $registration->$value) {
                                 break;
@@ -93,49 +93,63 @@ class Plugin extends \MapasCulturais\Plugin
                         }
 
                         return preg_replace('/[^0-9]/i', '', trim($result));
-                    },
-                    'TIPO_CONTA' => function () use ($registration, $field) {
-                        $type = $registration->$field;
-                        return is_array($registration->$field) ? trim($type[0]) : trim($type);
-                    },
-                    'NUM_BANCO' => function () use ($registration, $field) {
+                    },                    
+                    'BANCO' => function () use ($registration, $field) {
                         return $this->getNumberBank($registration->$field) ?? preg_replace('/[^0-9]/i', '', $registration->$field);
                     },
-                    'NOME_BANCO' => function () use ($registration, $field) {
-                        return trim(preg_replace('/\d+/u', '', trim($registration->$field)));
-                    },
-                    'AGENCIA_BANCO' => function () use ($registration, $field) {
+                    'AGENCIA' => function () use ($registration, $field) {
+                        $field_dv = "field_".$this->config['complement']['DIGITO_AGENCIA'];
+                        $dv = (trim($registration->$field_dv) == "Não possui dígito" ? "" : trim($registration->$field_dv));
+                                                
                         $branch = $registration->$field;
 
                         if (strlen($branch) >= 4) {
-                            return (strlen($branch) == 4) ? $branch : $branch . " - Agência inválida";
+                            $result = $branch;
                         } else {
-                            return str_pad($branch, 4, 0, STR_PAD_LEFT);
+                            $result = str_pad($branch, 4, 0, STR_PAD_LEFT);
                         }
+
+                        return $result.$dv;
+
                     },
-                    'DIGITO_AGENCIA' => function () use ($registration, $field) {
-                        $dv = (trim($registration->$field) == "Não possui dígito" ? "SEM DIGITO" : trim($registration->$field));
-                        return $dv;
-                    },
-                    'CONTA_BANCO' => function () use ($registration, $field) {
+                    'CONTA' => function () use ($registration, $field) {
+
+                        $field_dv = "field_".$this->config['complement']['DIGITO_CONTA'];
+                        $dv = trim($registration->$field_dv);
+
                         $account = $registration->$field;
                         if (strlen($account) >= 9) {
-                            return (strlen($account) == 9) ? $account : $account . " - Conta inválida";
+                            $result = $account;
                         } else {
-                            return str_pad($account, 9, 0, STR_PAD_LEFT);
+                            $result = str_pad($account, 9, 0, STR_PAD_LEFT);
                         }
-                    },
-                    'DIGITO_CONTA' => function () use ($registration, $field) {
-                        return trim($registration->$field);
-                    },
-                    'SITUACAO' => function () {
-                        return 1;
-                    },
-                    'VALOR' => function () {
-                        return " ";
+
+                        return $result.$dv;
                     },
                     'INSCRICAO_ID' => function () use ($registration, $field) {
                         return trim($registration->id);
+                    },
+                    'ERROS_AGENCIA' => function () use ($registration, $field) {
+                        $_error = "";
+                        $field_branch = "field_".$this->config['fields']['AGENCIA'];
+                        $field_dv = "field_".$this->config['complement']['DIGITO_AGENCIA'];
+                        
+                        $_error.= (trim($registration->$field_dv) == "Não possui dígito" ? "--Falta digito da agência \n" : "");
+
+                        if (strlen($registration->$field_branch) >= 4) {
+                            $_error.= "--Agência maior que 4 caracteres\n";
+                        }
+
+                        return $_error;
+                    },
+                    'ERROS_CONTA' => function () use ($registration, $field) {
+                        $_error = "";
+                        $field_dv = "field_".$this->config['fields']['CONTA'];
+                        $account = $registration->$field_dv;
+                        if (strlen($account) >= 9) {
+                            $_error = (strlen($account) == 9) ? "" : "--Conta maior que 9 caracteres\n";
+                        }
+                        return $_error;
                     }
 
 
