@@ -22,6 +22,15 @@ $route = MapasCulturais\App::i()->createUrl($slug, 'export', ['opportunity' => $
         <label for="to"><?= i::__("Identificação do lote") ?></label>
         <input type="text" name="lot" id="to" placeholder="Identificação do lote de pagamento Ex.: Lote 01"> <br>
 
+        <label for="to"><?= i::__("Status") ?></label> <br>
+        <small>Não selecionar nada para exportar somente as pendentes</small>
+        <select name="status" id="statys">
+            <option >Pendentes (Recomendado)</option>
+            <option value="10" >Selecionado</option>
+            <option value="3" >Não selecionado</option>
+            <option value="2" >Inválido</option>
+        </select> <br>
+    
         <div>
             <input type="checkbox" name="ignorePreviousLot">
             <label for="to"><?= i::__("Ignorar inscrições de lotes anteriores") ?></label>
