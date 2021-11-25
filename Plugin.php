@@ -126,6 +126,9 @@ class Plugin extends \MapasCulturais\Plugin
 
                         return $result.$dv;
                     },
+                    'OPERACAO_CONTA' => function () use ($registration, $field) {
+                        return $registration->$field ?? " ";
+                    },
                     'INSCRICAO_ID' => function () use ($registration, $field) {
                         return trim($registration->id);
                     },
